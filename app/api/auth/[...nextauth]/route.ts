@@ -19,7 +19,7 @@ const handler = NextAuth({
         try {
           const res = await fetch(`${process.env.BACKEND_URL}/login`, {
             method: "POST",
-            headers: { 
+            headers: {
               "Content-Type": "application/json",
               "Accept": "application/json"
             },
@@ -48,10 +48,10 @@ const handler = NextAuth({
               id: userData.id.toString(),
               name: userData.username || userData.first_name || userData.email,
               email: userData.email,
+              photo_url: userData.photo_url,
               token: token
             }
           }
-          
           return null
         } catch (error) {
           console.error("Authentication error:", error)
@@ -72,6 +72,23 @@ const handler = NextAuth({
         session.user.accessToken = token.accessToken
       }
       return session
+    }
+  },
+  events: {
+    async signOut({ token }) {
+      if (token?.accessToken) {
+        try {
+          await fetch(`${process.env.BACKEND_URL}/logout`, {
+            method: "DELETE",
+            headers: {
+              "Authorization": `Bearer ${token.accessToken}`,
+              "Content-Type": "application/json"
+            }
+          })
+        } catch (error) {
+          console.error("Error during server-side logout:", error)
+        }
+      }
     }
   },
   session: {
